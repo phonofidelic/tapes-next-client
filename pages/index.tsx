@@ -1,30 +1,26 @@
-import React, { useCallback } from "react";
-import Head from "next/head";
-import styles from "../styles/Home.module.css";
-import axios, { AxiosResponse } from "axios";
-import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
-import { useDropzone } from "react-dropzone";
+import React, { useCallback, useState, useEffect } from 'react';
+import Head from 'next/head';
+import styles from '../styles/Home.module.css';
+import axios, { AxiosResponse } from 'axios';
+import TokenUploader from '../components/TokenUploader';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import { Paper } from '@material-ui/core';
 
 export default function Home() {
-  const onDrop = useCallback(async (acceptedFiles) => {
-    // Do something with the files
-    console.log(acceptedFiles[0]);
-    await restoreIdentity(acceptedFiles[0]);
-  }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const [identityToken, setIdentiyToken] = useState('');
 
   const restoreIdentity = async (file) => {
-    console.log("restoreIdentity, file:", file);
+    console.log('restoreIdentity, file:', file);
     const formData = new FormData();
-    formData.append("identity", file);
-    console.log("restoreIdentity, formData:", file);
+    formData.append('identity', file);
+    console.log('restoreIdentity, formData:', file);
 
     let response: AxiosResponse;
 
     try {
-      response = await axios.post("/api/auth/restore", formData, {
-        headers: { "content-type": "multipart/form-data" },
+      response = await axios.post('/api/auth/restore', formData, {
+        headers: { 'content-type': 'multipart/form-data' },
         onUploadProgress: (event) => {
           console.log(
             `Current progress:`,
@@ -33,11 +29,18 @@ export default function Home() {
         },
       });
     } catch (err) {
-      console.error("Could not restore identity:", err);
+      console.error('Could not restore identity:', err);
     }
 
-    console.log("sendIdentityString, response:", response.data);
+    console.log('sendIdentityString, response:', response.data);
+    localStorage.setItem('tapes_identity', response.data.token);
+    setIdentiyToken(response.data.token);
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem('tapes_identity');
+    if (token) setIdentiyToken(token);
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -48,51 +51,36 @@ export default function Home() {
 
       <main className={styles.main}>
         <Grid container>
-          <Grid item md={12}>
-            <div>Identity</div>
-            <div
-              style={{
-                width: "100%",
-                height: 100,
-                border: `4px dashed #ccc`,
-                borderRadius: 4,
-              }}
-              {...getRootProps()}
-            >
-              <input {...getInputProps()} type="file" name="identity" />
-              {isDragActive ? (
-                <p>
-                  Drop the <b>.token</b> file here ...
-                </p>
+          <Grid item xs={12}>
+            <Paper>
+              <div>Identity</div>
+              {identityToken ? (
+                <Typography style={{ maxWidth: 200 }} noWrap>
+                  {identityToken}
+                </Typography>
               ) : (
-                <p>
-                  Drag and drop your <b>.token</b> file here, or click to select
-                  files
-                </p>
+                <TokenUploader restoreIdentity={restoreIdentity} />
               )}
-            </div>
-            <div>
-              <Button onClick={restoreIdentity}>Restore Identity</Button>
-            </div>
+            </Paper>
           </Grid>
-          <Grid item md={12}>
+          <Grid item xs={12}>
             Storage
           </Grid>
-          <Grid item md={12}>
+          <Grid item xs={12}>
             Data
           </Grid>
         </Grid>
       </main>
 
       <footer className={styles.footer}>
-        <a
+        {/* <a
           href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{" "}
+          Powered by{' '}
           <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
+        </a> */}
       </footer>
     </div>
   );
