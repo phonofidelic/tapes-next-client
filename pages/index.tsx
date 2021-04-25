@@ -6,6 +6,9 @@ import TokenUploader from '../components/TokenUploader';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { Paper } from '@material-ui/core';
+import { db } from '../db';
+
+// db.init();
 
 export default function Home() {
   const [identityToken, setIdentiyToken] = useState('');
@@ -37,9 +40,18 @@ export default function Home() {
     setIdentiyToken(response.data.token);
   };
 
+  const loadDb = async () => {
+    await db.init();
+    const result = await db.find('Recording', {});
+    console.log('loadDb, result:', result);
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('tapes_identity');
-    if (token) setIdentiyToken(token);
+    if (token) {
+      setIdentiyToken(token);
+      loadDb();
+    }
   }, []);
 
   return (

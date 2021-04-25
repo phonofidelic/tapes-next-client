@@ -10,6 +10,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.3",
     "@textile/hub": "^6.1.2",
+    "@textile/threaddb": "^0.0.6",
     "axios": "^0.21.1",
     "multer": "^1.4.2",
     "next": "10.1.3",

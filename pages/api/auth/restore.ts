@@ -1,9 +1,9 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import nextConnect from "next-connect";
-import multer from "multer";
-import { KeyInfo, PrivateKey, Users } from "@textile/hub";
+import { NextApiRequest, NextApiResponse } from 'next';
+import nextConnect from 'next-connect';
+import multer from 'multer';
+import { KeyInfo, PrivateKey, Users } from '@textile/hub';
 
-const THREADS_DB_NAME = "tapes-thread-db";
+const THREADS_DB_NAME = 'tapes-thread-db';
 
 const keyInfo: KeyInfo = {
   key: process.env.TEXTILE_API_KEY,
@@ -23,7 +23,7 @@ const upload = multer();
 
 const apiRoute = nextConnect({
   onError(error, req: NextApiRequest, res: NextApiResponse) {
-    console.log("!!! ERROR !!!:", error);
+    console.log('!!! ERROR !!!:', error);
     res
       .status(501)
       .json({ error: `Sorry something Happened! ${error.message}` });
@@ -33,22 +33,22 @@ const apiRoute = nextConnect({
   },
 });
 
-apiRoute.use(upload.single("identity"));
+apiRoute.use(upload.single('identity'));
 
 apiRoute.post(async (req: NextApiRequestWithFormData, res: NextApiResponse) => {
-  const identityString = req.file.buffer.toString("utf8");
-  console.log("restore, identityString:", identityString);
+  const identityString = req.file.buffer.toString('utf8');
+  console.log('restore, identityString:', identityString);
 
   const identity = PrivateKey.fromString(identityString.trim());
-  console.log("restore, identity:", identity);
+  console.log('restore, identity:', identity);
 
   const user = await Users.withKeyInfo(keyInfo);
   await user.getToken(identity);
 
   const dbThread = await user.getThread(THREADS_DB_NAME);
-  console.log("restore, dbThread:", dbThread);
+  console.log('restore, dbThread:', dbThread);
 
-  res.status(200).json({ message: "hello", token: identityString.trim() });
+  res.status(200).json({ message: 'hello', token: identityString.trim() });
 });
 
 export default apiRoute;
