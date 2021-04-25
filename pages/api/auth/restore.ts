@@ -43,7 +43,7 @@ apiRoute.post(async (req: NextApiRequestWithFormData, res: NextApiResponse) => {
   console.log('restore, identity:', identity);
 
   const user = await Users.withKeyInfo(keyInfo);
-  await user.getToken(identity);
+  const token = await user.getToken(identity);
 
   const dbThread = await user.getThread(THREADS_DB_NAME);
   console.log('restore, dbThread:', dbThread);

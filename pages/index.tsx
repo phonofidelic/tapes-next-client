@@ -2,16 +2,32 @@ import React, { useCallback, useState, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import axios, { AxiosResponse } from 'axios';
+import { db } from '../db';
+import { Recording } from '../common/Recording.interface';
 import TokenUploader from '../components/TokenUploader';
+import RecordingsListItem from '../components/RecordingsListItem';
+
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import { Paper } from '@material-ui/core';
-import { db } from '../db';
+import Paper from '@material-ui/core/Paper';
+import List from '@material-ui/core/List';
 
 // db.init();
 
 export default function Home() {
   const [identityToken, setIdentiyToken] = useState('');
+  const [bucketToken, setBucketToken] = useState('');
+  const [recordings, setRecordings] = useState([]);
+  const [selectedRecording, setSelectedRecording] = useState(null);
+
+  const handleSelectRecording = (recordingId: string) => {
+    setSelectedRecording(recordingId);
+  };
+
+  const handleDeleteRecording = (recordingId: string) => {
+    console.log('delete recording:', recordingId);
+    // dispatch(deleteRecording(recordingId));
+  };
 
   const restoreIdentity = async (file) => {
     console.log('restoreIdentity, file:', file);
@@ -44,6 +60,17 @@ export default function Home() {
     await db.init();
     const result = await db.find('Recording', {});
     console.log('loadDb, result:', result);
+    setRecordings(result);
+  };
+
+  const loadBucketToken = async (identityString) => {
+    const response = await axios.post('/api/auth/getBucketToken', {
+      identityString,
+    });
+
+    console.log('loadBucketToken, response:', response);
+
+    setBucketToken(response.data.token);
   };
 
   useEffect(() => {
@@ -51,6 +78,7 @@ export default function Home() {
     if (token) {
       setIdentiyToken(token);
       loadDb();
+      loadBucketToken(token);
     }
   }, []);
 
@@ -77,9 +105,22 @@ export default function Home() {
           </Grid>
           <Grid item xs={12}>
             Storage
-          </Grid>
-          <Grid item xs={12}>
-            Data
+            {!bucketToken ? (
+              'Loading...'
+            ) : (
+              <List>
+                {recordings.map((recording: Recording) => (
+                  <RecordingsListItem
+                    key={recording._id}
+                    bucketToken={bucketToken}
+                    recording={recording}
+                    selectedRecording={selectedRecording}
+                    handleSelectRecording={handleSelectRecording}
+                    handleDeleteRecording={handleDeleteRecording}
+                  />
+                ))}
+              </List>
+            )}
           </Grid>
         </Grid>
       </main>

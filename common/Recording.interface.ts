@@ -1,7 +1,7 @@
 import { RecordingFormats } from './RecordingFormats.enum';
 
 export interface Recording {
-  // _id?: string;
+  _id?: string;
   location: string;
   filename: string;
   size: number;

@@ -10,6 +10,8 @@ import {
   Identity,
 } from '@textile/hub';
 
+import { LOCAL_STORAGE_IDENTITY, RECORDING_COLLECTION } from './constants';
+
 export class RecordingModel implements Recording {
   // id: string;
   location: string;
@@ -58,22 +60,20 @@ const keyInfo: KeyInfo = {
 
 const getIdentity = async (): Promise<Identity> => {
   try {
-    var storedIdent = localStorage.getItem('identity');
+    var storedIdent = localStorage.getItem(LOCAL_STORAGE_IDENTITY);
     if (storedIdent === null) {
       throw new Error('No identity');
     }
-    const restored = PrivateKey.fromString(storedIdent.trim());
-    console.log('Stored identity:', restored);
+    const restored = PrivateKey.fromString(storedIdent);
     return restored;
   } catch (e) {
     /**
      * If any error, create a new identity.
      */
-    console.log('CREATING NEW IDENTITY...');
     try {
       const identity = PrivateKey.fromRandom();
       const identityString = identity.toString();
-      localStorage.setItem('identity', identityString);
+      localStorage.setItem(LOCAL_STORAGE_IDENTITY, identityString);
 
       console.log('New identity:', identity);
       return identity;
@@ -84,11 +84,8 @@ const getIdentity = async (): Promise<Identity> => {
 };
 
 const getDbThread = async () => {
-  const storedIdent = localStorage.getItem('tapes_identity');
+  const storedIdent = localStorage.getItem(LOCAL_STORAGE_IDENTITY);
   const identity = PrivateKey.fromString(storedIdent.trim());
-  console.log('getDbThread, identity:', identity);
-  console.log('getDbThread, keyInfo:', keyInfo);
-
   const user = await Users.withKeyInfo(keyInfo);
   try {
     await user.getToken(identity);
@@ -109,7 +106,7 @@ export class AppDatabase {
   constructor() {
     if (!this._db) {
       this._db = new Database(THREADS_DB_NAME, {
-        name: 'Recording',
+        name: RECORDING_COLLECTION,
         // schema: RecordingModel,
       });
     }
@@ -117,7 +114,6 @@ export class AppDatabase {
 
   init = async () => {
     console.log('Init DB');
-    // const open = async () => {
     console.log('Opening local database...', this._db.verno);
     try {
       await this._db.open(1);
@@ -126,9 +122,6 @@ export class AppDatabase {
     }
 
     await this.initRemote();
-    // await this._db.remote.pull();
-    // };
-    // open();
   };
 
   initRemote = async () => {
@@ -137,21 +130,15 @@ export class AppDatabase {
 
     await this._db.remote.setKeyInfo(keyInfo);
     const identity = await getIdentity();
-    console.log('*** identity:', identity);
     await this._db.remote.authorize(identity);
-    console.log('*** remote:', this._db.remote);
 
     try {
-      console.log('*** dbThread:', dbThread);
       this._db.remote.id = dbThread.toString();
       await this._db.remote.initialize();
     } catch (err) {
       console.error('Could not initialize remote database:', err);
     }
     console.log('Remote database initialized');
-
-    const remoteInfo = await this._db.remote.info();
-    console.log('*** remote info:', remoteInfo);
   };
 
   add = async (collectionName: string, doc: any) => {
@@ -163,8 +150,6 @@ export class AppDatabase {
   };
 
   find = async (collectionName: string, query: any = {}) => {
-    console.log('*** find ***');
-
     await this._db.remote.pull(collectionName);
     let collection;
     try {
