@@ -22,7 +22,7 @@ route.post(async (req: NextApiRequest, res: NextApiResponse) => {
   console.log('getBucketToken, itentityString:', identityString);
 
   const buckets = await Buckets.withKeyInfo(keyInfo, { debug: true });
-  const identity = await PrivateKey.fromString(identityString);
+  const identity = PrivateKey.fromString(identityString);
   const token = await buckets.getToken(identity);
 
   res.status(200).json({ message: 'ok', token });
