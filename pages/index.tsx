@@ -92,21 +92,8 @@ export default function Home() {
       <main className={styles.main}>
         <Grid container>
           <Grid item xs={12}>
-            <Paper>
-              <div>Identity</div>
-              {identityToken ? (
-                <Typography style={{ maxWidth: 200 }} noWrap>
-                  {identityToken}
-                </Typography>
-              ) : (
-                <TokenUploader restoreIdentity={restoreIdentity} />
-              )}
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            Storage
-            {!bucketToken ? (
-              'Loading...'
+            {!identityToken ? (
+              <TokenUploader restoreIdentity={restoreIdentity} />
             ) : (
               <List>
                 {recordings.map((recording: Recording) => (
@@ -126,14 +113,19 @@ export default function Home() {
       </main>
 
       <footer className={styles.footer}>
-        {/* <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a> */}
+        Powered by{' '}
+        <a
+          style={{
+            height: 'calc(0.385 * 6.5vw)',
+            width: '6.5vw',
+            background: 'url(https://textile.io/images/logo-dark.png)',
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            marginLeft: 16,
+          }}
+          href="https://textile.io/"
+          target="blank"
+        ></a>
       </footer>
     </div>
   );

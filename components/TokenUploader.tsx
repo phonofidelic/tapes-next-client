@@ -22,6 +22,8 @@ export default function TokenUploader({
         height: 100,
         border: `4px dashed #ccc`,
         borderRadius: 4,
+        textAlign: 'center',
+        padding: 8,
       }}
       {...getRootProps()}
     >
